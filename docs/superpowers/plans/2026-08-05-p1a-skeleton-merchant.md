@@ -32,6 +32,7 @@
 - **端口/命名**：game-merchant 端口 **9301**（9302 wallet、9303 lottery、9304 openapi、9305 report 预留）；数据库 `game_merchant`。
 - **DDL 风格**：全小写、`engine=innodb`、审计列 `create_dept/create_by/create_time/update_by/update_time/remark` 与上游 `ry-cloud.sql` 完全一致。
 - **测试**：业务规则用纯 Mockito 单测（不起 Spring 上下文、不依赖 nacos/mysql）；测试命令 `mvn -q test -pl game-modules/game-merchant -am -Dtest=<TestClass>`。
+- **⚠️ 勘误（执行期发现，覆盖本计划所有测试命令）**：根 pom 全局 `<skipTests>true</skipTests>` 且 surefire `<groups>${profiles.active}</groups>` 按标签过滤。因此：① 本计划中所有 `mvn … test` 命令**必须追加 `-DskipTests=false`**；② 每个测试类**必须加 `@Tag("dev")`**（`org.junit.jupiter.api.Tag`），否则测试静默不执行（"Tests run: 0" 或无输出，貌似绿灯实为空跑）。验证真跑了的标准：输出含 `Tests run: N`（N>0）。
 - **提交**：跟随仓库风格 `add 新增 …` / `update 优化 …` / `fix 修复 …`，末尾带 `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`。
 - **本地栈**：运行时验证需要本地 docker 栈（nacos dev namespace、mysql root/password@3306、redis），见 memory《Run full stack on macOS》；纯编译/单测不需要。
 
