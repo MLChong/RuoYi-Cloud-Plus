@@ -3,6 +3,8 @@ spring:
     dynamic:
       # 设置默认的数据源或者数据源组,默认值即为 master
       primary: master
+      # 游戏服务不引 seata，固定关闭数据源代理，免受全局 seata.enabled 开关影响
+      seata: false
       datasource:
         # 主库数据源
         master:
