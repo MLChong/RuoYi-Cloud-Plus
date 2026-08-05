@@ -2183,3 +2183,21 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 - 商户限红模板与玩家个体限红 → Plan C（限红属彩种域，届时在 merchant/player 表加关联列或独立配置表）
 - 商户信息的 Redis 缓存 → Plan D 验签链路成为热点时再加（YAGNI）
 - 网关路由 `game-merchant` 暴露 → Plan F 联调时统一加
+
+---
+
+## 执行结果与终审结论（2026-08-05，branch: feature/p1a-skeleton-merchant）
+
+**状态：已完成，终审 MERGE-READY。** 16 个 commit（b2d9fb5a..9228cfaf），真实测试 20/20（@Tag(dev) + -DskipTests=false），冒烟通过（nacos dev 注册、双 Dubbo 服务暴露、DDL 已建、配置已发布）。执行期修复：@Tag(dev) 空跑勘误、resetSecret 审计泄密、changeStatus 防重、Dubbo 3.3.6 JsonUtils SPI 崩溃（prefer=fastjson2）、seata 全局开关耦合（seata: false 固定）。
+
+**延期项（defer OK，终审已裁决）**：商户编码逻辑删后唯一键占用（F 处理 UX）；Bo 校验组未分 add/edit；currencies 缺 @Size；adjustPrepaid delta 缺 @Digits（仅管理端可接受）；守卫 SQL 未过真库（并入 B 集成测试）；getOrCreate 防御分支无测试。
+
+**B–F 计划必须吸收的输入（终审 plan-level observations）**：
+1. spec §4.2「额度不足自动停服」归属拆分：扣费→B（计费）、launch 校验→D、投注校验→C——需在各计划中显式写明，否则会掉在计划间。
+2. Plan D：`getByCode` 会返回停用商户（语义=查得到、消费方决策）——openapi 验签后必须显式检查 `merchant.status`，写进 D 的 brief。
+3. Plan D 加固：secret 静态加密考虑 `ruoyi-common-encrypt @EncryptField`（HMAC 需可逆存储，加密而非哈希）。
+4. Plan B：`dubbo.json-framework.prefer=fastjson2` 守卫目前只在 game-merchant main()——B 起新服务须复制或抽 game-common bootstrap util；将来 @SpringBootTest 需 surefire argLine 带该属性。禁止改 ruoyi-common-dubbo（上游隔离）。
+5. 构建/CI：必须 `-Pdev -DskipTests=false` 才有测试信号；所有新测试类必须 `@Tag("dev")`。
+6. 生产部署：game 服务数据源凭据自管（种子自包含，不走共享 datasource.yml 间接引用）。
+7. Plan F：商户创建后密钥获取 UX（创建即显示一次 + isSaveResponseData=false，或引导 resetSecret）。
+8. Plan B 钱包金额入参严格 @Digits(integer=18, fraction=6) 校验。
