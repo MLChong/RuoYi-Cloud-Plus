@@ -76,7 +76,7 @@ public class MerchantController extends BaseController {
      * 重置商户密钥（新密钥仅在本响应中透出一次）
      */
     @SaCheckPermission("game:merchant:resetSecret")
-    @Log(title = "商户管理", businessType = BusinessType.UPDATE)
+    @Log(title = "商户管理", businessType = BusinessType.UPDATE, isSaveResponseData = false)
     @RepeatSubmit()
     @PutMapping("/resetSecret/{merchantId}")
     public R<String> resetSecret(@PathVariable Long merchantId) {
