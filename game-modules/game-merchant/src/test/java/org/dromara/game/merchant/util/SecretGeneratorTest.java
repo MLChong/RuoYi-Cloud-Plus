@@ -1,10 +1,12 @@
 package org.dromara.game.merchant.util;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("dev")
 @DisplayName("商户密钥生成器")
 class SecretGeneratorTest {
 

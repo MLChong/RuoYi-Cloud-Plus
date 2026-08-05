@@ -8,6 +8,7 @@ import org.dromara.game.merchant.domain.bo.MerchantBo;
 import org.dromara.game.merchant.mapper.MerchantMapper;
 import org.dromara.game.merchant.service.impl.MerchantServiceImpl;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -21,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@Tag("dev")
 @DisplayName("商户服务")
 @ExtendWith(MockitoExtension.class)
 class MerchantServiceTest {
