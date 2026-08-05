@@ -4,6 +4,7 @@ import cn.dev33.satoken.annotation.SaCheckPermission;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.domain.R;
+import org.dromara.common.idempotent.annotation.RepeatSubmit;
 import org.dromara.common.log.annotation.Log;
 import org.dromara.common.log.enums.BusinessType;
 import org.dromara.common.mybatis.core.page.PageQuery;
@@ -43,6 +44,7 @@ public class PlayerController extends BaseController {
      */
     @SaCheckPermission("game:player:edit")
     @Log(title = "玩家档案", businessType = BusinessType.UPDATE)
+    @RepeatSubmit()
     @PutMapping("/changeStatus/{playerId}")
     public R<Void> changeStatus(@PathVariable Long playerId,
                                 @Pattern(regexp = "^[01]$", message = "状态仅支持0/1") @RequestParam String status) {
