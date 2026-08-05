@@ -23,7 +23,7 @@
 
 | # | 决策 | 内容 |
 |---|---|---|
-| 1 | 开奖源 | 双源：官彩采集（多源比对）+ 自开彩 RNG（commit-reveal 可审计） |
+| 1 | 开奖源 | 双源：官彩采集（每彩种单采集源）+ 自开彩 RNG（commit-reveal 可审计） |
 | 2 | 商户接入模式 | 同时支持 Seamless（单一钱包：我方定义回调规范，商户实现，我方调用）与 Transfer（转账钱包：我方提供 API，商户调用，我方持游戏内账本） |
 | 3 | 无 payment 模块 | 玩家资金全部通过 seamless/transfer 钱包 API 与商户平台结算 |
 | 4 | 品牌 | 单品牌 |
@@ -111,7 +111,7 @@ game-api/            上述服务间的 Dubbo 接口定义（game-api-merchant /
 - **期号**：SnailJob 按彩种时刻表（含时区，存储全 UTC）预生成；状态机 `PENDING → OPEN → CLOSED → DRAWN → SETTLED / VOIDED`
 - **投注**：校验（会话、封盘、限红、商户状态）→ WalletPort.debit → RocketMQ 事务消息落注单；"钱动必有单"由事务消息 + 冲正保证
 - **开奖双源**（策略接口 `DrawSource`）：
-  - OFFICIAL：每彩种 ≥2 采集源比对一致才开奖；不一致/超时 → 延迟开奖 → 超阈值转异常期
+  - OFFICIAL：每彩种配置 1 个采集源；号码入库前做格式/范围合法性校验；采集失败/超时 → 延迟开奖 → 超阈值转异常期
   - RNG：独立组件（便于将来送审认证）；期号创建时公布 `hash(serverSeed)`，开奖后公开 serverSeed，结果 = 确定性函数(serverSeed, 期号)，可第三方复验
 - **结算**：开奖事件驱动，按期号+分片键并行；中奖判定 → WalletPort.credit 派彩；幂等、整期可重跑
 - **推送**：SSE 推送开奖结果与余额变动到游戏 H5
@@ -148,7 +148,7 @@ SnailJob 到点触发 → DrawSource 取号 → 期号置 DRAWN + 发开奖事�
 
 ### 5.5 异常期（VOIDED）
 
-采集源持续不一致或 RNG 组件故障超阈值 → 整期作废 → 全部注单退款（`credit` 原额，幂等）→ 公告推送。
+采集源持续失败或 RNG 组件故障超阈值 → 整期作废 → 全部注单退款（`credit` 原额，幂等）→ 公告推送。
 
 ## 6. 数据设计要点
 
@@ -177,7 +177,7 @@ SnailJob 到点触发 → DrawSource 取号 → 期号置 DRAWN + 发开奖事�
 | debit 超时（结果未知） | 发幂等 rollback + 拒单；rollback 也失败则进对账差异队列人工处置 |
 | credit 派彩失败 | MQ 重试（退避）→ 超限进死信 + SnailJob 补偿 + 对账兜底，绝不静默丢弃 |
 | transfer 卡单 | transfer-query 查证 → 终态冲正，SnailJob 周期兜底 |
-| 采集源不一致/超时 | 延迟开奖 → 超阈值整期 VOIDED 退款 |
+| 采集源失败/超时 | 延迟开奖 → 超阈值整期 VOIDED 退款 |
 | MQ 落单消费失败 | 重试 → 死信告警；投注入口有事务消息回查，防"扣款无单" |
 
 ## 10. 测试策略
