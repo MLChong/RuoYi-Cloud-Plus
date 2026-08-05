@@ -387,6 +387,8 @@
         <module>ruoyi-api</module>
         <module>ruoyi-common</module>
         <module>ruoyi-example</module>
+        <module>game-api</module>
+        <module>game-modules</module>
     </modules>
     <packaging>pom</packaging>
 
