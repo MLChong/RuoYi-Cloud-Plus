@@ -99,4 +99,26 @@ class RemoteServiceTest {
         assertEquals(100L, vo.getPlayerId());
         assertEquals("u001", vo.getExternalPlayerId());
     }
+
+    @Test
+    @DisplayName("getOrCreate：商户已停用（非null）抛异常，不建档")
+    void getOrCreate_merchantDisabledNonNull_throws() {
+        org.dromara.game.merchant.domain.vo.MerchantVo mvo = new org.dromara.game.merchant.domain.vo.MerchantVo();
+        mvo.setMerchantId(1L);
+        mvo.setStatus("1");
+        when(merchantService.queryById(1L)).thenReturn(mvo);
+        assertThrows(ServiceException.class,
+            () -> remotePlayerService.getOrCreate(1L, "u001"));
+        verifyNoInteractions(playerService);
+    }
+
+    @Test
+    @DisplayName("getByCode：币种为空串返回空列表")
+    void getByCode_blankCurrencies_returnsEmptyList() {
+        Merchant m = merchant("0");
+        m.setCurrencies("");
+        when(merchantService.getByCode("mch_test01")).thenReturn(m);
+        RemoteMerchantVo vo = remoteMerchantService.getByCode("mch_test01");
+        assertTrue(vo.getCurrencies().isEmpty());
+    }
 }
